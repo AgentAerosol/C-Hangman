@@ -1,0 +1,213 @@
+#include <iostream>
+#include <cmath>
+#include <ctime>
+#include <string>
+#include <algorithm>
+#include <vector>
+
+using namespace std;
+
+const string words[] = {"zebra", "horse", "duck", "octopus", "dog"};
+const string hangManImage[] = {"  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========",
+"  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========",
+"  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========",
+"  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========",
+"  +---+\n  |   |\n  O   |\n /|\  |\n      |\n      |\n=========",
+"  +---+\n  |   |\n  O   |\n /|\  |\n /    |\n      |\n=========",
+"  +---+\n  |   |\n  O   |\n /|\  |\n / \  |\n      |\n=========" };
+
+int main()
+{
+	// Variables
+	string play{"yes"};
+	string lastWord{};
+	string lastLastWord{};
+	const int minValue{0};
+	const int maxValue{sizeof(words) / sizeof(int) / 10};
+
+	while (play == "yes")
+	{
+		// Play
+		while (play != "yes" or play != "no")
+		{
+			cout << "Type yes to play, type no to quit: ";
+			cin >> play;
+			transform(play.begin(), play.end(), play.begin(), tolower);
+			if (play == "yes" or play == "no")
+			{
+				if (play == "no")
+				{
+					return 0;
+				}
+				break;
+			}
+		}
+		
+		// Variables
+		int found{};
+		int lengthOfRandomWordLetters{};
+		string randomWord{lastWord};
+		string randomWordLetters{};
+		string randomWordLettersPosition{};
+		string guess{};
+		string correctGuessLetters{};
+		string guessLetters{};
+		string answerType{};
+		cout << endl;
+
+		// Prevent repetition by atleast 2
+		while (randomWord == lastWord or randomWord == lastLastWord)
+		{
+			int randomNumber = rand() % (maxValue - minValue + 1) + minValue;
+			randomWord = words[randomNumber];
+			if (lastWord == lastLastWord)
+			{
+				lastWord = randomWord;
+			}
+			if (randomWord != lastWord and randomWord != lastLastWord and lastWord != lastLastWord)
+			{
+				lastWord = randomWord;
+				break;
+			}
+		}
+
+		// Enable for answer
+		cout << endl << randomWord << endl;
+
+		// Getting length of the word
+		for (int i = 0; i < randomWord.length(); i++)
+		{
+			randomWordLetters.append(string(1, randomWord[i]));
+			randomWordLettersPosition.append(string(1, randomWord[i]));
+			lengthOfRandomWordLetters = i + 1;
+		}
+
+		// Setting up the empty spaces for guess
+		for (int i = 0; i < lengthOfRandomWordLetters; i++)
+		{
+			correctGuessLetters.append("_");
+		}
+
+		// Start of game
+		for (int rounds = 0; rounds < 8; rounds++)
+		{
+			// Pick answer type
+
+			while (answerType != "word" or answerType != "letter")
+			{
+				cout << "Do you want to try to enter what you think the word is or a letter. Type word for word and letter for letter: ";
+				cin >> answerType;
+				transform(answerType.begin(), answerType.end(), answerType.begin(), tolower);
+				if (answerType == "word" or answerType == "letter")
+				{
+					break;
+				}
+			}
+			
+			// Entering answer
+			
+			// Letter
+			if (answerType == "letter")
+			{
+				while (true)
+				{
+					bool fail{false};
+					cout << "\nEnter a letter: ";
+					cin >> guess;
+					transform(guess.begin(), guess.end(), guess.begin(), tolower);
+					for (int i = 0; i < guessLetters.length(); i++)
+					{
+						string letter{guessLetters[i]};
+						if (guess == letter)
+						{
+							fail = true;
+						}
+					}
+					if (guess.length() == 1 and fail == false)
+					{
+						break;
+					}
+					fail == false;
+				}
+			}
+
+			// Word
+			else
+			{
+				cout << "Enter a word: ";
+				cin >> guess;
+				if (guess == randomWord)
+				{
+					cout << "You win!!!\n";
+					break;
+				}
+				else
+				{
+					if (rounds == 7)
+					{
+						cout << "You lost!!!\n";
+						continue;
+					}
+					else
+					{
+						cout << hangManImage[rounds] << "\nThat was not the word\nYou have " << 7 - rounds << " tries left\n";
+						continue;
+					}
+				}
+			}
+			
+			// Check if the answer is correct
+			for (int x = 1; x < randomWordLetters.length() + 1; x++)
+			{
+				if (guess == string(1, randomWordLetters[x - 1]))
+				{
+					char guessChar{};
+					bool debounce{ false };
+					for (int i = 0; i < guess.length(); i++)
+					{
+						guessChar = guess[i];
+					}
+					for (int i = x - 1; i < lengthOfRandomWordLetters; i++)
+					{
+						if (guessChar == randomWordLettersPosition[i] and debounce == false)
+						{
+							correctGuessLetters[i] = guessChar;
+							debounce == true;
+						}
+						randomWordLetters[i] = randomWordLetters[i + 1];
+					}
+					x = 1;
+					found++;
+					rounds--;
+					cout << "\nYou guessed correctly\n";
+				}
+			}
+			guessLetters.append(guess);
+			guess = {};	
+			cout << "You have guessed\n" << guessLetters << endl;
+
+			// Prints correct letters
+			cout << endl << correctGuessLetters << endl;
+
+			// Prints how many tries are left
+			if (rounds != 7)
+			{
+				cout << endl << hangManImage[rounds] << endl << "\nYou have " << 7 - (rounds + 1) << " tries left\n";
+			}
+
+			// Prints if player win
+			if (found == randomWordLetters.length())
+			{
+				cout << endl << "You win!!!!!!!!" << endl;
+				break;
+			}
+
+			// Prints if player looses
+			if (rounds == 7)
+			{
+				cout << hangManImage[rounds] << "\nYou loose!!!!!\n";
+			}
+		}
+	}
+	return 0;
+}
